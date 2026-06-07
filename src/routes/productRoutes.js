@@ -73,9 +73,17 @@ router.get('/', (req, res) => {
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 10));
   const offset = (page - 1) * limit;
+  const search = (req.query.search || '').trim();
 
-  const total = db.prepare('SELECT COUNT(*) as count FROM products').get().count;
-  const products = db.prepare('SELECT * FROM products ORDER BY created_at DESC LIMIT ? OFFSET ?').all(limit, offset);
+  let total, products;
+  if (search) {
+    const like = `%${search}%`;
+    total = db.prepare('SELECT COUNT(*) as count FROM products WHERE name LIKE ? OR description LIKE ?').get(like, like).count;
+    products = db.prepare('SELECT * FROM products WHERE name LIKE ? OR description LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?').all(like, like, limit, offset);
+  } else {
+    total = db.prepare('SELECT COUNT(*) as count FROM products').get().count;
+    products = db.prepare('SELECT * FROM products ORDER BY created_at DESC LIMIT ? OFFSET ?').all(limit, offset);
+  }
 
   res.json({
     data: {

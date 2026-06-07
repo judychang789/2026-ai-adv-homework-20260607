@@ -7,10 +7,10 @@ createApp({
     const loading = ref(true);
 
     const featuredImages = [
-      'https://images.unsplash.com/photo-1490750967868-88aa4f44baee?w=400',
-      'https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=400',
-      'https://images.unsplash.com/photo-1508610048659-a06b669e3321?w=400',
-      'https://images.unsplash.com/photo-1455659817273-f96807779a8a?w=400',
+      'https://images.unsplash.com/photo-1568640347023-a616a30bc3bd?w=400',
+      'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400',
+      'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400',
+      'https://images.unsplash.com/photo-1601758003122-53c40e686a19?w=400',
     ];
 
     async function loadProducts(page) {

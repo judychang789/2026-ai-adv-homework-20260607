@@ -22,6 +22,10 @@ router.get('/', function (req, res) {
   renderFront(res, 'index', { title: '首頁', pageScript: 'index' });
 });
 
+router.get('/products', function (req, res) {
+  renderFront(res, 'products', { title: '商品列表', pageScript: 'products' });
+});
+
 router.get('/products/:id', function (req, res) {
   renderFront(res, 'product-detail', {
     title: '商品詳情',
@@ -44,6 +48,14 @@ router.get('/login', function (req, res) {
 
 router.get('/orders', function (req, res) {
   renderFront(res, 'orders', { title: '我的訂單', pageScript: 'orders' });
+});
+
+router.get('/order-confirm/:id', function (req, res) {
+  renderFront(res, 'order-confirm', {
+    title: '確認訂單',
+    pageScript: 'order-confirm',
+    orderId: req.params.id
+  });
 });
 
 router.get('/orders/:id', function (req, res) {

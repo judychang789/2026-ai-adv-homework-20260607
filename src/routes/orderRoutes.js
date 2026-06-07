@@ -299,7 +299,12 @@ router.get('/:id', (req, res) => {
     return res.status(404).json({ data: null, error: 'NOT_FOUND', message: '訂單不存在' });
   }
 
-  const items = db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id);
+  const items = db.prepare(`
+    SELECT oi.*, p.image_url AS product_image
+    FROM order_items oi
+    LEFT JOIN products p ON oi.product_id = p.id
+    WHERE oi.order_id = ?
+  `).all(order.id);
 
   res.json({
     data: { ...order, items },

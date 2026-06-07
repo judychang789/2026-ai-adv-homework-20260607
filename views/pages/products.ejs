@@ -1,0 +1,228 @@
+<div id="app">
+
+  <nav class="flex items-center gap-1.5 text-[13px] text-nav-link mb-6">
+    <a href="/" class="hover:text-rose-primary transition-colors flex items-center">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </a>
+    <span class="text-text-muted mx-0.5">›</span>
+    <span class="text-brand-dark font-medium">商品列表</span>
+  </nav>
+
+  <div class="flex flex-col lg:flex-row gap-6 items-start">
+
+    <aside class="w-full lg:w-[200px] lg:flex-shrink-0">
+
+      <button class="lg:hidden w-full flex items-center justify-between bg-white rounded-2xl px-4 py-3 shadow-sm mb-1"
+              @click="showFilter = !showFilter">
+        <span class="flex items-center gap-2 text-brand-dark font-medium text-[14px]">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-brand-dark">
+            <line x1="4" y1="6" x2="20" y2="6"/>
+            <line x1="8" y1="12" x2="16" y2="12"/>
+            <line x1="11" y1="18" x2="13" y2="18"/>
+          </svg>
+          篩選商品
+        </span>
+        <span v-if="activeFilterCount > 0"
+              class="bg-rose-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+          {{ activeFilterCount }}
+        </span>
+      </button>
+
+      <div :class="showFilter ? 'block' : 'hidden'" class="lg:!block bg-white lg:bg-transparent rounded-2xl lg:rounded-none p-4 lg:p-0 shadow-sm lg:shadow-none mt-1 lg:mt-0">
+
+        <!-- 桌機版篩選條件標題 -->
+        <div class="hidden lg:flex items-center justify-between mb-4">
+          <h2 class="text-brand-dark text-[16px] font-bold">篩選條件</h2>
+          <button v-if="activeFilterCount > 0" @click="clearFilters"
+                  class="text-rose-primary text-[12px] font-normal hover:opacity-75 transition-opacity">
+            清除全部
+          </button>
+        </div>
+
+        <div class="mb-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-brand-dark text-[14px] font-bold">商品分類</h3>
+          </div>
+          <ul class="space-y-2">
+            <li v-for="cat in categories" :key="cat.id">
+              <button @click="setCategory(cat.id)"
+                      class="flex items-center gap-2 w-full text-left py-0.5 text-[13px] transition-colors"
+                      :class="selectedCategory === cat.id ? 'text-rose-primary font-medium' : 'text-nav-link hover:text-rose-primary'">
+                <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors"
+                      :class="selectedCategory === cat.id ? 'bg-rose-primary' : 'bg-footer-link/40'"></span>
+                {{ cat.name }}
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div class="border-t border-footer-link/20 mb-5 pt-5">
+          <h3 class="text-brand-dark text-[14px] font-bold mb-3">價格範圍</h3>
+          <ul class="space-y-2">
+            <li v-for="range in priceRanges" :key="range.id">
+              <button @click="togglePriceRange(range.id)"
+                      class="flex items-center gap-2 w-full text-left py-0.5 text-[13px] transition-colors"
+                      :class="selectedPriceRanges.includes(range.id) ? 'text-rose-primary font-medium' : 'text-nav-link hover:text-rose-primary'">
+                <span class="w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors"
+                      :class="selectedPriceRanges.includes(range.id) ? 'border-rose-primary bg-rose-primary' : 'border-footer-link'">
+                  <span v-if="selectedPriceRanges.includes(range.id)" class="w-1 h-1 rounded-full bg-white"></span>
+                </span>
+                {{ range.label }}
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div class="border-t border-footer-link/20 mb-5 pt-5">
+          <h3 class="text-brand-dark text-[14px] font-bold mb-3">品牌</h3>
+          <ul class="space-y-2">
+            <li v-for="brand in brands" :key="brand">
+              <button @click="toggleBrand(brand)"
+                      class="flex items-center gap-2 w-full text-left py-0.5 text-[13px] transition-colors"
+                      :class="selectedBrands.includes(brand) ? 'text-rose-primary font-medium' : 'text-nav-link hover:text-rose-primary'">
+                <span class="w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors"
+                      :class="selectedBrands.includes(brand) ? 'border-rose-primary bg-rose-primary' : 'border-footer-link'">
+                  <span v-if="selectedBrands.includes(brand)" class="w-1 h-1 rounded-full bg-white"></span>
+                </span>
+                {{ brand }}
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- 手機版清除按鈕（桌機已在標題列） -->
+        <button v-if="activeFilterCount > 0"
+                @click="clearFilters"
+                class="lg:hidden text-rose-primary text-[12px] font-normal hover:opacity-75 transition-opacity">
+          清除全部
+        </button>
+
+      </div>
+    </aside>
+
+    <div class="flex-1 min-w-0">
+
+      <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+        <span class="text-[14px] text-nav-link">
+          共 <span class="font-bold text-rose-primary">{{ displayProducts.length }}</span> 件商品
+        </span>
+        <div class="flex items-center flex-wrap gap-2 text-[13px]">
+          <span class="text-nav-link text-[13px]">排序：</span>
+          <button v-for="opt in sortOptions" :key="opt.value"
+                  @click="setSort(opt.value)"
+                  class="py-[7px] px-[14px] rounded-full text-[13px] border transition-colors"
+                  :class="sortBy === opt.value
+                    ? 'bg-rose-primary text-white border-rose-primary'
+                    : 'bg-white text-nav-link border-input-border hover:border-rose-primary hover:text-rose-primary'">
+            {{ opt.label }}
+          </button>
+        </div>
+      </div>
+
+      <div v-if="loading" class="flex justify-center py-20">
+        <div class="w-8 h-8 border-4 border-rose-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+
+      <template v-else>
+
+        <div v-if="displayProducts.length === 0" class="text-center py-20">
+          <p class="text-text-secondary text-lg mb-2">沒有符合條件的商品</p>
+          <p class="text-text-muted text-sm">請嘗試調整篩選條件</p>
+          <button @click="clearFilters" class="mt-4 text-rose-primary text-sm hover:underline">清除篩選條件</button>
+        </div>
+
+        <div v-else class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          <div
+            v-for="(product, idx) in paginatedProducts"
+            :key="product.id"
+            @click="goToProduct(product.id)"
+            class="bg-white rounded-2xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-all hover:-translate-y-1 group relative"
+          >
+            <div class="absolute top-3 left-3 z-10">
+              <span class="bg-rose-primary text-white text-xs px-2.5 py-0.5 rounded-full font-medium">New</span>
+            </div>
+
+            <div class="aspect-[305/200] overflow-hidden bg-product-bg">
+              <img
+                :src="product.image_url"
+                :alt="product.name"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+
+            <div class="p-4">
+              <div class="flex items-center gap-1 mb-1.5">
+                <template v-for="i in 5" :key="i">
+                  <svg v-if="i <= Math.round(product.rating || 4)"
+                       width="16" height="16" viewBox="0 0 24 24"
+                       class="text-apricot flex-shrink-0">
+                    <path fill="currentColor" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  <svg v-else
+                       width="16" height="16" viewBox="0 0 24 24"
+                       class="text-footer-link flex-shrink-0">
+                    <path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </template>
+                <span class="font-meta text-footer-link text-[11px] ml-0.5">({{ product.review_count }})</span>
+              </div>
+              <h3 class="text-brand-dark text-[14px] font-medium mb-2 truncate">{{ product.name }}</h3>
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="font-price text-rose-primary font-bold text-[18px] leading-none mb-0.5">
+                    NT$ {{ product.price.toLocaleString() }}
+                  </div>
+                  <div v-if="product.original_price" class="font-meta text-footer-link text-[12px] line-through">
+                    NT$ {{ product.original_price.toLocaleString() }}
+                  </div>
+                </div>
+                <button
+                  @click.stop="addToCart(product)"
+                  :disabled="product._adding || product.stock <= 0"
+                  class="w-9 h-9 bg-rose-primary text-white rounded-full flex items-center justify-center text-xl hover:bg-rose-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  :title="product.stock <= 0 ? '已售完' : '加入購物車'"
+                >+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="totalPages > 1" class="flex items-center justify-center gap-1.5 mt-8 flex-wrap">
+          <button @click="goPage(currentPage - 1)"
+                  :disabled="currentPage === 1"
+                  class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-nav-link text-lg hover:bg-rose-bg transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            ‹
+          </button>
+          <button
+            v-for="p in totalPages" :key="p"
+            @click="goPage(p)"
+            class="w-8 h-8 flex items-center justify-center rounded-full text-sm font-medium transition-colors"
+            :class="p === currentPage ? 'bg-rose-primary text-white' : 'bg-white text-nav-link hover:bg-rose-bg'"
+          >{{ p }}</button>
+          <div class="flex items-center gap-1 ml-1">
+            <input
+              v-model.number="jumpPage"
+              type="number" min="1" :max="totalPages"
+              class="w-10 h-8 text-center text-sm rounded-lg border border-rose-light outline-none text-brand-dark bg-white"
+            >
+            <button
+              @click="jumpPage >= 1 && jumpPage <= totalPages && goPage(jumpPage)"
+              class="h-8 px-3 bg-rose-primary text-white text-sm rounded-lg font-medium hover:bg-rose-dark transition-colors"
+            >GO</button>
+          </div>
+          <button @click="goPage(currentPage + 1)"
+                  :disabled="currentPage === totalPages"
+                  class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-nav-link text-lg hover:bg-rose-bg transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            ›
+          </button>
+        </div>
+
+        <p v-if="displayProducts.length > 0" class="text-center text-nav-link text-[12px] mt-3">
+          第 {{ (currentPage - 1) * pageSize + 1 }}–{{ Math.min(currentPage * pageSize, displayProducts.length) }} 件，共 {{ displayProducts.length }} 件
+        </p>
+
+      </template>
+    </div>
+
+  </div>
+</div>

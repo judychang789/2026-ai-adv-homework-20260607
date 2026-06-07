@@ -27,8 +27,11 @@ function initializeDatabase() {
       name TEXT NOT NULL,
       description TEXT,
       price INTEGER NOT NULL CHECK(price > 0),
+      original_price INTEGER,
       stock INTEGER NOT NULL DEFAULT 0 CHECK(stock >= 0),
       image_url TEXT,
+      rating REAL NOT NULL DEFAULT 4.5,
+      review_count INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
@@ -69,6 +72,7 @@ function initializeDatabase() {
   `);
 
   ensureOrdersColumns();
+  ensureProductsColumns();
 
   // Seed data
   seedAdminUser();
@@ -102,6 +106,22 @@ function ensureOrdersColumns() {
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_merchant_trade_no ON orders(merchant_trade_no)');
 }
 
+function ensureProductsColumns() {
+  const columns = db.prepare('PRAGMA table_info(products)').all();
+  const existing = new Set(columns.map((c) => c.name));
+
+  if (!existing.has('original_price')) {
+    db.exec('ALTER TABLE products ADD COLUMN original_price INTEGER');
+    db.exec('UPDATE products SET original_price = ROUND(price * 1.25)');
+  }
+  if (!existing.has('rating')) {
+    db.exec('ALTER TABLE products ADD COLUMN rating REAL NOT NULL DEFAULT 4.5');
+  }
+  if (!existing.has('review_count')) {
+    db.exec('ALTER TABLE products ADD COLUMN review_count INTEGER NOT NULL DEFAULT 128');
+  }
+}
+
 function seedAdminUser() {
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@hexschool.com';
   const adminPassword = process.env.ADMIN_PASSWORD || '12345678';
@@ -122,70 +142,54 @@ function seedProducts() {
 
   const seedProducts = [
     {
-      name: '粉色玫瑰花束',
-      description: '精選 20 朵頂級粉色玫瑰，搭配滿天星與尤加利葉，由專業花藝師手工包紮。柔美的粉色花瓣層層綻放，散發淡雅清香，適合生日、紀念日或任何想要表達心意的場合。每束花皆附贈保鮮指南小卡與精美緞帶包裝，讓美麗延續更久。',
-      price: 1680,
-      stock: 30,
-      image_url: 'https://images.unsplash.com/photo-1565279445322-30ab5314ff94?w=400'
+      name: '貓咪鮮食主食罐',
+      description: '嚴選天然食材製作的貓咪主食罐頭，含有高比例真實肉塊，無添加人工色素與防腐劑。豐富的動物蛋白質幫助維持肌肉量，添加牛磺酸與維生素 E 守護心臟與視力健康。適合各年齡層貓咪，挑嘴貓也超愛的絕佳口感，讓每一餐都充滿幸福。',
+      price: 180, original_price: 225, stock: 120, image_url: '/images/products/cat-food_001.png', rating: 4, review_count: 89
     },
     {
-      name: '白色百合花禮盒',
-      description: '嚴選 6 枝純白香水百合，花朵碩大飽滿，綻放時散發優雅迷人的清甜香氣。搭配翠綠葉材，置於典雅燙金禮盒中，無需額外包裝即可直接送禮。適合開幕誌慶、喬遷祝賀、長輩生日等正式場合，傳遞最體面的祝福心意。',
-      price: 1280,
-      stock: 25,
-      image_url: 'https://images.unsplash.com/photo-1555596112-ca9a1e964e13?w=400'
+      name: '貓咪機能保健零食',
+      description: '以凍乾技術鎖住食材原始營養，低溫製程保留天然酵素與胺基酸。每包僅含單一蛋白質來源，適合敏感腸胃或過敏體質的貓咪。體積輕巧方便攜帶，是外出訓練、獎勵互動的最佳小點心，讓主子乖乖配合的秘密武器。',
+      price: 250, original_price: 320, stock: 90, image_url: '/images/products/cat-food_002.png', rating: 5, review_count: 156
     },
     {
-      name: '繽紛向日葵花束',
-      description: '陽光般燦爛的向日葵 10 朵，搭配橙色雛菊、黃金球與新鮮綠葉，組成充滿活力的繽紛花束。向日葵象徵樂觀與希望，適合畢業祝賀、探病慰問或為朋友加油打氣。花束以牛皮紙與麻繩包裝，呈現自然清新的田園風格。',
-      price: 980,
-      stock: 40,
-      image_url: 'https://images.unsplash.com/photo-1543409777-30250849aa3e?w=400'
+      name: '貓咪無穀天然乾糧',
+      description: '採用無穀配方，以鮭魚、雞肉為主要蛋白質來源，搭配南瓜、甜菜根等蔬果纖維，維持腸道菌叢平衡。Omega-3 脂肪酸讓毛色光亮有彈性，排泄物氣味大幅降低。每粒飼料大小適中，有助於清潔牙齒，守護口腔健康，讓愛貓每天都活力滿滿。',
+      price: 680, original_price: 860, stock: 55, image_url: '/images/products/cat-food_003.png', rating: 4, review_count: 203
     },
     {
-      name: '紫色鬱金香盆栽',
-      description: '荷蘭進口紫色鬱金香球根盆栽，含手工陶瓷花盆，整體高度約 25-30cm。鬱金香花期約 2-3 週，花朵會隨光線開合，姿態優雅迷人。放置於明亮通風處，每 2-3 天澆水一次即可。適合擺放在書桌、窗台或玄關，為空間增添一抹春日浪漫。',
-      price: 750,
-      stock: 50,
-      image_url: 'https://images.unsplash.com/photo-1668170782281-330e987237ba?w=400'
+      name: '幼貓專用成長配方罐',
+      description: '針對 4 個月至 1 歲幼貓黃金成長期特別設計，高達 85% 含肉量補充發育所需蛋白質。添加 DHA 促進大腦與神經發育，鈣磷黃金比例強健骨骼與牙齒。質地細滑易消化，適合剛換乳食或腸胃較弱的小貓咪，讓幼貓健康茁壯成長。',
+      price: 220, original_price: 280, stock: 80, image_url: '/images/products/cat-food_004.png', rating: 5, review_count: 67
     },
     {
-      name: '乾燥花藝術花圈',
-      description: '由花藝師手工製作的乾燥花圈，直徑約 30cm，嚴選棉花、兔尾草、星辰花、尤加利葉等天然花材，以大地色系與柔粉色調交織而成。無需澆水照顧，可保存 6 個月以上，是居家門飾、牆面裝飾或拍照道具的絕佳選擇。附贈麻繩掛環，收到即可懸掛。',
-      price: 1450,
-      stock: 20,
-      image_url: 'https://images.unsplash.com/photo-1610467618849-66d363f5aa16?w=400'
+      name: '狗狗天然主食糧',
+      description: '以新鮮雞肉為第一原料，搭配糙米、燕麥、胡蘿蔔等天然食材，提供全方位均衡營養。不含玉米、小麥、大豆等常見過敏原，適合敏感體質狗狗。益生菌配方改善腸道健康、增強免疫力，讓狗狗每天都精神奕奕、毛色亮麗。適合各體型成犬日常食用。',
+      price: 780, original_price: 980, stock: 45, image_url: '/images/products/dog-food_001.png', rating: 4, review_count: 312
     },
     {
-      name: '迷你多肉組合盆',
-      description: '嚴選 5 種不同品種的迷你多肉植物（含石蓮花、熊童子、虹之玉等），搭配手工水泥圓盆與鋪面小石，整體直徑約 15cm。多肉植物耐旱好照顧，約 7-10 天澆水一次即可，是辦公桌、書架上的療癒小物。適合送給喜歡綠植但忙碌的朋友。',
-      price: 580,
-      stock: 60,
-      image_url: 'https://images.unsplash.com/photo-1763609196518-46f0ee9d5cfd?w=400'
+      name: '寵物綜合營養零食包',
+      description: '精選多款口味組合包，包含雞肉條、鮪魚片、起司球等多種風味，滿足毛孩多變口味需求。採用人食級食材製作，無添加人工香料與防腐劑，讓主人安心、毛孩開心。獨立小包裝設計，方便外出攜帶，也能有效保持零食新鮮度，是日常獎勵互動的絕佳選擇。',
+      price: 320, original_price: 399, stock: 70, image_url: '/images/products/pet-food_001.png', rating: 4, review_count: 178
     },
     {
-      name: '經典紅玫瑰花束',
-      description: '頂級厄瓜多進口紅玫瑰 99 朵，花朵碩大、色澤濃郁飽滿，象徵「長長久久」的永恆愛情。搭配滿天星與進口葉材，以豪華紅色緞帶與高級霧面包裝紙層層包紮，花束直徑超過 50cm，氣勢磅礴。最適合求婚、情人節或重要紀念日，給摯愛最隆重的浪漫告白。',
-      price: 3980,
-      stock: 15,
-      image_url: 'https://images.unsplash.com/photo-1735598564837-dc45391d5ca1?w=400'
+      name: '貓咪羽毛逗貓棒',
+      description: '以天然羽毛與仿真昆蟲元素設計，模擬真實獵物動態，激發貓咪本能獵食慾望。彈性鋼絲桿手感輕盈，操控靈活，能做出各種不規則擺動引發貓咪追逐。持續互動遊戲有效消耗體力，減少因無聊產生的破壞行為，增進主貓之間的親密感情，讓愛貓每天快樂放電。',
+      price: 280, original_price: 350, stock: 65, image_url: '/images/products/pet-toy_001.png', rating: 5, review_count: 445
     },
     {
-      name: '季節鮮花訂閱（月配）',
-      description: '每月由駐店花藝師依當季花材精心搭配一束鮮花，直送到府。春天有鬱金香與牡丹，夏天有繡球與向日葵，秋冬則有菊花與聖誕紅等應景花材。每次收花都是驚喜，讓家中四季皆有鮮花相伴。訂閱期間享免運優惠，每月中旬配送，亦可指定暫停月份。',
-      price: 890,
-      stock: 100,
-      image_url: 'https://images.unsplash.com/photo-1610190427750-03e9095f18e3?w=400'
+      name: '寵物益智慢食玩具',
+      description: '多層次設計的益智慢食玩具，將零食藏入不同深度的凹槽中，讓毛孩動腦思考找出食物。有效延長進食時間，避免狼吞虎嚥引起消化問題，同時訓練嗅覺與爪部靈活度。食品級 PP 材質安全無毒，拆解清洗方便。適合犬貓使用，多種難度設定滿足不同程度的毛孩。',
+      price: 450, original_price: 580, stock: 40, image_url: '/images/products/pet-toy_002.png', rating: 4, review_count: 231
     }
   ];
 
   const insert = db.prepare(
-    'INSERT INTO products (id, name, description, price, stock, image_url) VALUES (?, ?, ?, ?, ?, ?)'
+    'INSERT INTO products (id, name, description, price, original_price, stock, image_url, rating, review_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
   );
 
   const insertMany = db.transaction((products) => {
     for (const p of products) {
-      insert.run(uuidv4(), p.name, p.description, p.price, p.stock, p.image_url);
+      insert.run(uuidv4(), p.name, p.description, p.price, p.original_price, p.stock, p.image_url, p.rating, p.review_count);
     }
   });
 

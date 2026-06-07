@@ -1,26 +1,178 @@
-<header class="sticky top-0 z-50 bg-white shadow-sm border-b border-rose-bg">
-  <div class="max-w-7xl mx-auto flex items-center justify-between px-4 h-16">
-    <a href="/" class="text-xl font-bold text-rose-primary" style="font-family: 'Noto Serif TC', serif;">
-      花漾生活
-    </a>
+<style>
+  /* Active nav underline — pseudo-element cannot be expressed as Tailwind utility */
+  .nav-link { position: relative; display: inline-block; padding-bottom: 4px; }
+  .nav-link.active { color: #ff6b9d; font-weight: 700; }
+  .nav-link.active::after {
+    content: '';
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: #ff6b9d;
+    border-radius: 2px;
+    margin-top: 2px;
+  }
+  [v-cloak] { display: none; }
+</style>
 
-    <nav class="flex items-center gap-6 text-sm text-text-secondary">
-      <a href="/" class="hover:text-rose-primary transition-colors">商品列表</a>
-      <a href="/cart" class="hover:text-rose-primary transition-colors relative">
-        購物車
-        <span
-          id="cart-badge"
-          class="absolute -top-2 -right-4 bg-rose-primary text-white text-xs rounded-full w-5 h-5 items-center justify-center"
-          style="display: none;"
-        ></span>
-      </a>
-      <a id="orders-link" href="/orders" class="hover:text-rose-primary transition-colors" style="display: none;">
-        我的訂單
-      </a>
-    </nav>
+<div id="header-app">
+  <header class="sticky top-0 z-50 bg-white shadow-sm border-b border-rose-bg">
 
-    <div id="auth-nav" class="flex items-center gap-4 text-sm">
-      <a href="/login" class="bg-rose-primary text-white px-4 py-1.5 rounded-full hover:bg-rose-dark transition-colors">登入</a>
+    <!-- Main header row -->
+    <div class="max-w-7xl mx-auto flex items-center justify-between px-4 h-16">
+
+      <!-- Logo -->
+      <a href="/" class="flex items-center flex-shrink-0 gap-[5px] lg:gap-2">
+        <img src="/images/logo.webp" alt="暮寵日和"
+             class="w-6 h-6 lg:w-8 lg:h-8 object-contain">
+        <span class="font-serif-tc font-bold leading-none text-brand-dark text-[23px] lg:text-[32px] sm:hidden">
+          暮寵日和
+        </span>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden lg:flex items-center gap-6">
+        <a href="/" class="nav-link text-nav-link text-[15px] font-normal transition-colors">首頁</a>
+        <a href="/products" class="nav-link text-nav-link text-[15px] font-normal transition-colors">商品</a>
+        <a href="#about" class="nav-link text-nav-link text-[15px] font-normal transition-colors">品牌故事</a>
+        <a href="#contact" class="nav-link text-nav-link text-[15px] font-normal transition-colors">聯絡我們</a>
+      </nav>
+
+      <!-- Right side -->
+      <div class="flex items-center gap-3">
+
+        <!-- Search icon: always visible, toggles search bar -->
+        <button @click="searchOpen = !searchOpen; searchQuery = ''"
+                class="flex items-center justify-center hover:opacity-70 transition-opacity"
+                aria-label="搜尋">
+          <img src="/images/search_icon.webp" alt="搜尋" class="w-[22px] h-[22px] object-contain">
+        </button>
+
+        <!-- Cart: always visible -->
+        <a href="/cart" class="relative flex items-center gap-1.5 bg-rose-primary text-white px-4 py-1.5 rounded-full text-sm hover:bg-rose-dark transition-colors">
+          <img src="/images/cart_icon.webp" alt="" class="w-[18px] h-[18px] object-contain">
+          <span class="hidden lg:inline">購物車</span>
+          <span
+            id="cart-badge"
+            class="absolute -top-2 -right-2 bg-white text-rose-primary text-xs rounded-full w-5 h-5 items-center justify-center font-bold border border-rose-primary"
+            style="display:none;"
+          ></span>
+        </a>
+
+        <!-- Orders link: desktop only -->
+        <a id="orders-link" href="/orders"
+           class="hidden lg:flex items-center text-sm text-nav-link hover:opacity-70 transition-opacity"
+           style="display:none;">
+          我的訂單
+        </a>
+
+        <!-- Desktop auth nav -->
+        <div id="auth-nav" class="hidden lg:flex items-center gap-3">
+          <a href="/login" class="flex items-center justify-center hover:opacity-70 transition-opacity">
+            <img src="/images/user_icon.webp" alt="會員" class="w-7 h-7 object-contain">
+          </a>
+        </div>
+
+        <!-- Mobile admin badge: shown via JS for admin only -->
+        <span id="mobile-admin-badge" class="hidden lg:hidden text-[12px] font-semibold text-rose-primary">Admin</span>
+
+        <!-- Mobile user icon: visible when not logged in -->
+        <a id="mobile-user-btn" href="/login"
+           class="flex lg:hidden items-center justify-center hover:opacity-70 transition-opacity">
+          <img src="/images/user_icon.webp" alt="會員" class="w-7 h-7 object-contain">
+        </a>
+
+        <!-- Hamburger: mobile/tablet only -->
+        <button
+          @click="menuOpen = !menuOpen"
+          class="flex lg:hidden items-center justify-center p-1 bg-transparent border-0 cursor-pointer hover:opacity-70 transition-opacity"
+          aria-label="選單"
+        >
+          <span v-cloak v-show="!menuOpen" class="text-[22px] leading-none text-brand-dark">☰</span>
+          <span v-cloak v-show="menuOpen"  class="text-[22px] leading-none text-brand-dark">✕</span>
+        </button>
+
+      </div>
     </div>
-  </div>
-</header>
+
+    <!-- Search bar (v-show, slides in below main row) -->
+    <div v-show="searchOpen" class="border-t border-rose-bg bg-white px-4 py-3">
+      <div class="max-w-7xl mx-auto flex items-center gap-2">
+        <input
+          v-model="searchQuery"
+          @keydown.enter="doSearch"
+          type="text"
+          placeholder="輸入商品關鍵字..."
+          class="flex-1 h-[42px] border border-input-border rounded-lg px-3 text-[14px] text-brand-dark placeholder:text-footer-link bg-white focus:outline-none focus:border-rose-primary transition-colors"
+          ref="searchInput"
+        />
+        <button @click="doSearch"
+                class="h-[42px] px-5 bg-rose-primary text-white text-[14px] font-medium rounded-lg hover:bg-rose-dark transition-colors whitespace-nowrap">
+          查詢
+        </button>
+        <button @click="searchOpen = false; searchQuery = ''"
+                class="w-[42px] h-[42px] flex items-center justify-center text-nav-link hover:text-brand-dark transition-colors text-[18px] font-medium flex-shrink-0">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile dropdown menu -->
+    <div
+      v-show="menuOpen"
+      class="lg:!hidden bg-white border-t border-rose-bg overflow-hidden"
+    >
+      <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-5">
+        <a href="/" class="nav-link text-nav-link text-[15px] font-normal">首頁</a>
+        <a href="/products" class="nav-link text-nav-link text-[15px] font-normal">商品</a>
+        <a href="#about"   class="nav-link text-nav-link text-[15px] font-normal" @click="menuOpen = false">品牌故事</a>
+        <a href="#contact" class="nav-link text-nav-link text-[15px] font-normal" @click="menuOpen = false">聯絡我們</a>
+        <!-- Auth section: populated by header-init.js -->
+        <div id="mobile-auth-section"></div>
+      </div>
+    </div>
+
+  </header>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const { createApp, ref, nextTick } = Vue;
+    createApp({
+      setup() {
+        const menuOpen = ref(false);
+        const searchOpen = ref(false);
+        const searchQuery = ref('');
+        const searchInput = ref(null);
+
+        function doSearch() {
+          var q = searchQuery.value.trim();
+          if (!q) return;
+          window.location.href = '/products?search=' + encodeURIComponent(q);
+        }
+
+        // Focus input when search bar opens
+        Vue.watch(searchOpen, function (val) {
+          if (val) {
+            nextTick(function () {
+              if (searchInput.value) searchInput.value.focus();
+            });
+          }
+        });
+
+        return { menuOpen, searchOpen, searchQuery, searchInput, doSearch };
+      }
+    }).mount('#header-app');
+
+    // Mark active link
+    document.querySelectorAll('.nav-link').forEach(function (link) {
+      var href = link.getAttribute('href');
+      var path = window.location.pathname;
+      if (
+        href === path ||
+        (href !== '/' && !href.startsWith('#') && path.startsWith(href))
+      ) {
+        link.classList.add('active');
+      }
+    });
+  });
+</script>

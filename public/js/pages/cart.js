@@ -6,12 +6,53 @@ createApp({
     const loading = ref(true);
     const confirmVisible = ref(false);
     const deleteItemId = ref('');
+    const couponCode = ref('');
+    const discount = ref(0);
+    const couponApplied = ref(false);
+    const couponError = ref('');
 
     const total = computed(function () {
       return items.value.reduce(function (sum, item) {
         return sum + item.product.price * item.quantity;
       }, 0);
     });
+
+    const shipping = computed(function () {
+      return total.value >= 500 ? 0 : 150;
+    });
+
+    const grandTotal = computed(function () {
+      return Math.max(0, total.value - discount.value) + shipping.value;
+    });
+
+    function getCategoryLabel(product) {
+      var url = (product.image_url || '').toLowerCase();
+      var name = (product.name || '').toLowerCase();
+      if (url.includes('cat-food')) return '貓咪零食';
+      if (url.includes('cat')) return '貓咪商品';
+      if (url.includes('dog-food')) return '狗狗糧食';
+      if (url.includes('dog')) return '狗狗商品';
+      if (url.includes('pet-toy') || name.includes('玩具') || name.includes('逗貓')) return '寵物玩具';
+      if (url.includes('pet-food') || name.includes('零食')) return '寵物零食';
+      return '寵物商品';
+    }
+
+    function applyCoupon() {
+      var code = couponCode.value.trim().toUpperCase();
+      if (!code) {
+        couponError.value = '請輸入折扣碼';
+        return;
+      }
+      if (code === 'PETLIFE') {
+        discount.value = Math.round(total.value * 0.05);
+        couponApplied.value = true;
+        couponError.value = '';
+      } else {
+        discount.value = 0;
+        couponApplied.value = false;
+        couponError.value = '折扣碼無效或已過期';
+      }
+    }
 
     async function loadCart() {
       loading.value = true;
@@ -68,7 +109,9 @@ createApp({
     });
 
     return {
-      items, loading, total, confirmVisible,
+      items, loading, total, shipping, grandTotal,
+      confirmVisible, couponCode, discount, couponApplied, couponError,
+      getCategoryLabel, applyCoupon,
       updateQuantity, confirmDelete, handleDelete, goCheckout
     };
   }
