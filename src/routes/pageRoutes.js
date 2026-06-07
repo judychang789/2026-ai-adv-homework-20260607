@@ -67,6 +67,13 @@ router.get('/orders/:id', function (req, res) {
   });
 });
 
+router.get('/payment-success/:id', function (req, res) {
+  renderFront(res, 'payment-success', {
+    title: '付款成功',
+    orderId: req.params.id
+  });
+});
+
 // Admin pages
 router.get('/admin/products', function (req, res) {
   renderAdmin(res, 'products', {

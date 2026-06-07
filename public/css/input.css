@@ -56,5 +56,6 @@ body {
 }
 
 .font-serif-tc { font-family: 'Noto Serif TC', serif; }
+.font-logo     { font-family: 'Noto Sans TC', sans-serif; }
 .font-price    { font-family: var(--font-price); }
 .font-meta     { font-family: var(--font-meta); }

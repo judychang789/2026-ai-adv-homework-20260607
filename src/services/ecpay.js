@@ -132,7 +132,7 @@ function buildAioCheckoutParams({ order, items, merchantTradeNo }) {
     TradeDesc: buildTradeDescription(order.order_no),
     ItemName: buildItemName(items),
     ReturnURL: `${appBaseUrl}/api/orders/payment/ecpay/callback`,
-    ClientBackURL: `${appBaseUrl}/orders/${order.id}?payment=returned`,
+    ClientBackURL: `${appBaseUrl}/payment-success/${order.id}`,
     ChoosePayment: 'ALL',
     NeedExtraPaidInfo: 'Y',
     EncryptType: '1'

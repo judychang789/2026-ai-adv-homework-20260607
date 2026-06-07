@@ -1,3 +1,11 @@
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 const Auth = {
   TOKEN_KEY: 'flower_token',
   USER_KEY: 'flower_user',
@@ -34,7 +42,7 @@ const Auth = {
   getSessionId() {
     let sid = localStorage.getItem(this.SESSION_KEY);
     if (!sid) {
-      sid = crypto.randomUUID();
+      sid = generateUUID();
       localStorage.setItem(this.SESSION_KEY, sid);
     }
     return sid;

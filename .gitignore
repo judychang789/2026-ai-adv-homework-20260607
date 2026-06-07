@@ -38,3 +38,11 @@ coverage/
 
 .claude/*.local.json
 public/css/output.css
+
+# Playwright artifacts
+tests/e2e/screenshots/
+tests/e2e/report/
+playwright-report/
+test-results/
+*.webm
+trace.zip

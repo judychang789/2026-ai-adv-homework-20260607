@@ -41,6 +41,10 @@ createApp({
     const displayProducts = computed(function () {
       var list = allProducts.value.slice();
 
+      if (selectedCategory.value) {
+        list = list.filter(function (p) { return p.category === selectedCategory.value; });
+      }
+
       if (selectedPriceRanges.value.length > 0) {
         list = list.filter(function (p) {
           return selectedPriceRanges.value.some(function (rid) {
@@ -148,7 +152,9 @@ createApp({
           p._adding = false;
           return p;
         });
-      } catch (e) {
+        console.log('loadProducts 完成，商品數:', allProducts.value.length);
+      } catch (error) {
+        console.error('=== loadProducts 錯誤 ===', error);
         allProducts.value = [];
       } finally {
         loading.value = false;
@@ -156,6 +162,7 @@ createApp({
     }
 
     onMounted(function () {
+      console.log('=== onMounted 開始 ===');
       loadProducts();
     });
 
@@ -168,4 +175,4 @@ createApp({
       goPage, goToProduct, addToCart, loadProducts
     };
   }
-}).mount('#app');
+}).mount('#products-app');

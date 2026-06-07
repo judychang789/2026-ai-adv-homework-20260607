@@ -30,6 +30,7 @@ function initializeDatabase() {
       original_price INTEGER,
       stock INTEGER NOT NULL DEFAULT 0 CHECK(stock >= 0),
       image_url TEXT,
+      category TEXT NOT NULL DEFAULT 'other',
       rating REAL NOT NULL DEFAULT 4.5,
       review_count INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -120,6 +121,9 @@ function ensureProductsColumns() {
   if (!existing.has('review_count')) {
     db.exec('ALTER TABLE products ADD COLUMN review_count INTEGER NOT NULL DEFAULT 128');
   }
+  if (!existing.has('category')) {
+    db.exec("ALTER TABLE products ADD COLUMN category TEXT NOT NULL DEFAULT 'other'");
+  }
 }
 
 function seedAdminUser() {
@@ -144,52 +148,52 @@ function seedProducts() {
     {
       name: '貓咪鮮食主食罐',
       description: '嚴選天然食材製作的貓咪主食罐頭，含有高比例真實肉塊，無添加人工色素與防腐劑。豐富的動物蛋白質幫助維持肌肉量，添加牛磺酸與維生素 E 守護心臟與視力健康。適合各年齡層貓咪，挑嘴貓也超愛的絕佳口感，讓每一餐都充滿幸福。',
-      price: 180, original_price: 225, stock: 120, image_url: '/images/products/cat-food_001.png', rating: 4, review_count: 89
+      price: 180, original_price: 225, stock: 120, image_url: '/images/products/cat-food_001.png', category: 'cat', rating: 4, review_count: 89
     },
     {
       name: '貓咪機能保健零食',
       description: '以凍乾技術鎖住食材原始營養，低溫製程保留天然酵素與胺基酸。每包僅含單一蛋白質來源，適合敏感腸胃或過敏體質的貓咪。體積輕巧方便攜帶，是外出訓練、獎勵互動的最佳小點心，讓主子乖乖配合的秘密武器。',
-      price: 250, original_price: 320, stock: 90, image_url: '/images/products/cat-food_002.png', rating: 5, review_count: 156
+      price: 250, original_price: 320, stock: 90, image_url: '/images/products/cat-food_002.png', category: 'snack', rating: 5, review_count: 156
     },
     {
       name: '貓咪無穀天然乾糧',
       description: '採用無穀配方，以鮭魚、雞肉為主要蛋白質來源，搭配南瓜、甜菜根等蔬果纖維，維持腸道菌叢平衡。Omega-3 脂肪酸讓毛色光亮有彈性，排泄物氣味大幅降低。每粒飼料大小適中，有助於清潔牙齒，守護口腔健康，讓愛貓每天都活力滿滿。',
-      price: 680, original_price: 860, stock: 55, image_url: '/images/products/cat-food_003.png', rating: 4, review_count: 203
+      price: 680, original_price: 860, stock: 55, image_url: '/images/products/cat-food_003.png', category: 'cat', rating: 4, review_count: 203
     },
     {
       name: '幼貓專用成長配方罐',
       description: '針對 4 個月至 1 歲幼貓黃金成長期特別設計，高達 85% 含肉量補充發育所需蛋白質。添加 DHA 促進大腦與神經發育，鈣磷黃金比例強健骨骼與牙齒。質地細滑易消化，適合剛換乳食或腸胃較弱的小貓咪，讓幼貓健康茁壯成長。',
-      price: 220, original_price: 280, stock: 80, image_url: '/images/products/cat-food_004.png', rating: 5, review_count: 67
+      price: 220, original_price: 280, stock: 80, image_url: '/images/products/cat-food_004.png', category: 'cat', rating: 5, review_count: 67
     },
     {
       name: '狗狗天然主食糧',
       description: '以新鮮雞肉為第一原料，搭配糙米、燕麥、胡蘿蔔等天然食材，提供全方位均衡營養。不含玉米、小麥、大豆等常見過敏原，適合敏感體質狗狗。益生菌配方改善腸道健康、增強免疫力，讓狗狗每天都精神奕奕、毛色亮麗。適合各體型成犬日常食用。',
-      price: 780, original_price: 980, stock: 45, image_url: '/images/products/dog-food_001.png', rating: 4, review_count: 312
+      price: 780, original_price: 980, stock: 45, image_url: '/images/products/dog-food_001.png', category: 'dog', rating: 4, review_count: 312
     },
     {
       name: '寵物綜合營養零食包',
       description: '精選多款口味組合包，包含雞肉條、鮪魚片、起司球等多種風味，滿足毛孩多變口味需求。採用人食級食材製作，無添加人工香料與防腐劑，讓主人安心、毛孩開心。獨立小包裝設計，方便外出攜帶，也能有效保持零食新鮮度，是日常獎勵互動的絕佳選擇。',
-      price: 320, original_price: 399, stock: 70, image_url: '/images/products/pet-food_001.png', rating: 4, review_count: 178
+      price: 320, original_price: 399, stock: 70, image_url: '/images/products/pet-food_001.png', category: 'snack', rating: 4, review_count: 178
     },
     {
       name: '貓咪羽毛逗貓棒',
       description: '以天然羽毛與仿真昆蟲元素設計，模擬真實獵物動態，激發貓咪本能獵食慾望。彈性鋼絲桿手感輕盈，操控靈活，能做出各種不規則擺動引發貓咪追逐。持續互動遊戲有效消耗體力，減少因無聊產生的破壞行為，增進主貓之間的親密感情，讓愛貓每天快樂放電。',
-      price: 280, original_price: 350, stock: 65, image_url: '/images/products/pet-toy_001.png', rating: 5, review_count: 445
+      price: 280, original_price: 350, stock: 65, image_url: '/images/products/pet-toy_001.png', category: 'cat', rating: 5, review_count: 445
     },
     {
       name: '寵物益智慢食玩具',
       description: '多層次設計的益智慢食玩具，將零食藏入不同深度的凹槽中，讓毛孩動腦思考找出食物。有效延長進食時間，避免狼吞虎嚥引起消化問題，同時訓練嗅覺與爪部靈活度。食品級 PP 材質安全無毒，拆解清洗方便。適合犬貓使用，多種難度設定滿足不同程度的毛孩。',
-      price: 450, original_price: 580, stock: 40, image_url: '/images/products/pet-toy_002.png', rating: 4, review_count: 231
+      price: 450, original_price: 580, stock: 40, image_url: '/images/products/pet-toy_002.png', category: 'dog', rating: 4, review_count: 231
     }
   ];
 
   const insert = db.prepare(
-    'INSERT INTO products (id, name, description, price, original_price, stock, image_url, rating, review_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO products (id, name, description, price, original_price, stock, image_url, category, rating, review_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
   );
 
   const insertMany = db.transaction((products) => {
     for (const p of products) {
-      insert.run(uuidv4(), p.name, p.description, p.price, p.original_price, p.stock, p.image_url, p.rating, p.review_count);
+      insert.run(uuidv4(), p.name, p.description, p.price, p.original_price, p.stock, p.image_url, p.category, p.rating, p.review_count);
     }
   });
 
