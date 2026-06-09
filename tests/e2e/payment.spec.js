@@ -2,7 +2,7 @@
 // 綠界 ECPay 金流 E2E 測試 — 暮寵日和 PawPaw Shop
 const { test, expect } = require('@playwright/test');
 
-const BASE_URL = 'http://172.29.41.152:3001';
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3001';
 const TEST_EMAIL = 'admin@hexschool.com';
 const TEST_PASSWORD = '12345678';
 
